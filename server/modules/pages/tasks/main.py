@@ -38,11 +38,11 @@ async def create_task(request: Request, response: Response, current_user: User =
 
 
 @router.put("/{task_id}")
-def update_task(task: schema.Task, task_id: int, response: Response, current_user: User = Depends(get_current_user)):
+async def update_task(request: Request, task_id: int, response: Response, current_user: User = Depends(get_current_user)):
     try:
         # session = create_session()
+        task_dict = await request.json()
         session = SessionManager.create_session()
-        task_dict = task.__dict__
         task_dict.update({'author': current_user.id})
         task_dict = TaskValidator.to_python(task_dict)
         existing_page = session.query(Task).filter(Task.id == task_id, Task.author == current_user.id).first()
@@ -75,7 +75,6 @@ def update_task(task: schema.Task, task_id: int, response: Response, current_use
 @router.get("/{task_id}")
 def get_task(task_id: int, response: Response, current_user: User = Depends(get_current_user)):
     try:
-        # session = create_session()
         session = SessionManager.create_session()
 
         existing_task = session.query(Task).filter(Task.id == task_id, Task.author == current_user.id).first()
@@ -84,8 +83,7 @@ def get_task(task_id: int, response: Response, current_user: User = Depends(get_
             response.status_code = status.HTTP_404_NOT_FOUND
             return {'status': status.HTTP_404_NOT_FOUND, 'message': 'Task not found'}
         existing_task.status = existing_task.status_label
-        # import pdb;
-        # pdb.set_trace()
+
         task = schema.ReadTask(**existing_task.__dict__)
         response.status_code = status.HTTP_200_OK
         return {'status': status.HTTP_200_OK, 'message': 'Task details loaded',

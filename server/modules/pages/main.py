@@ -72,12 +72,11 @@ def get_page(page_id: int, response: Response, current_user: User = Depends(get_
 
 
 @router.put("/{page_id}")
-def update_page(page: schema.Page, page_id: int, response: Response, current_user: User = Depends(get_current_user)):
+async def update_page(request: Request, page_id: int, response: Response, current_user: User = Depends(get_current_user)):
     try:
 
         session = SessionManager.create_session()
-
-        page_dict = page.__dict__
+        page_dict = await request.json()
         page_dict.update({'author': current_user.id})
         page_dict = PageValidator.to_python(page_dict)
         existing_page = session.query(Page).filter(Page.id == page_id, Page.author == current_user.id).first()
@@ -112,7 +111,6 @@ def update_page(page: schema.Page, page_id: int, response: Response, current_use
 def delete_page(page_id: int, response: Response, current_user: User = Depends(get_current_user)):
     try:
         session = SessionManager.create_session()
-
         existing_page = session.query(Page).filter(Page.id == page_id, Page.author == current_user.id).first()
         if existing_page is None:
             response.status_code = status.HTTP_404_NOT_FOUND
