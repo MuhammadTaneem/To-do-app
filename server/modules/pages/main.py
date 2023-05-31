@@ -1,6 +1,6 @@
 import formencode
 from fastapi import APIRouter, status, Response, Depends, Request
-from core.db import create_session
+from core.db import SessionManager
 from .validator import PageValidator
 from core.dependencis import get_current_user
 from . import schema
@@ -25,8 +25,12 @@ async def create_page(request: Request, response: Response, current_user: User =
         page_dict.update({'page_name': "Unnamed"}) if page_dict['page_name'] == "" else None
         clean_data = PageValidator.to_python(page_dict)
         data = Page(**clean_data)
-        session = create_session()
+        # session = create_session()
+        session = SessionManager.create_session()
+
         session.add(data)
+        # session.rollback()
+        # import pdb;pdb.set_trace()
         session.commit()
         session.refresh(data)
         session.close()
@@ -47,7 +51,8 @@ async def create_page(request: Request, response: Response, current_user: User =
 @router.get("/{page_id}")
 def get_page(page_id: int, response: Response, current_user: User = Depends(get_current_user)):
     try:
-        session = create_session()
+        # session = create_session()
+        session = SessionManager.create_session()
         existing_page = session.query(Page).filter(Page.id == page_id, Page.author == current_user.id).first()
         child_pages = session.query(Page).filter(Page.parent_page_id == page_id, Page.author == current_user.id).all()
         tasks_list = session.query(Task).filter(Task.page_id == page_id, Task.author == current_user.id).all()
@@ -70,9 +75,11 @@ def get_page(page_id: int, response: Response, current_user: User = Depends(get_
 @router.put("/{page_id}")
 def update_page(page: schema.Page, page_id: int, response: Response, current_user: User = Depends(get_current_user)):
     try:
-        session = create_session()
+        # session = create_session()
         # import pdb;
         # pdb.set_trace()
+        session = SessionManager.create_session()
+
         page_dict = page.__dict__
         page_dict.update({'author': current_user.id})
         page_dict = PageValidator.to_python(page_dict)
@@ -116,7 +123,9 @@ def update_page(page: schema.Page, page_id: int, response: Response, current_use
 @router.delete("/{page_id}")
 def delete_page(page_id: int, response: Response, current_user: User = Depends(get_current_user)):
     try:
-        session = create_session()
+        # session = create_session()
+        session = SessionManager.create_session()
+
         existing_page = session.query(Page).filter(Page.id == page_id, Page.author == current_user.id).first()
         if existing_page is None:
             response.status_code = status.HTTP_404_NOT_FOUND

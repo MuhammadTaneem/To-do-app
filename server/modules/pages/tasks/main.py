@@ -1,6 +1,6 @@
 import formencode
 from fastapi import APIRouter, status, Response, Depends
-from core.db import create_session
+from core.db import SessionManager
 from .validator import TaskValidator
 from core.dependencis import get_current_user
 from . import schema
@@ -18,7 +18,8 @@ def create_task(task: schema.Task, response: Response, current_user: User = Depe
         task_dict.update({'task_name': "Unnamed "}) if task_dict['task_name'] == "" else None
         clean_data = TaskValidator.to_python(task_dict)
         data = Task(**clean_data)
-        session = create_session()
+        # session = create_session()
+        session = SessionManager.create_session()
         session.add(data)
         session.commit()
         session.refresh(data)
@@ -40,7 +41,8 @@ def create_task(task: schema.Task, response: Response, current_user: User = Depe
 @router.put("/{task_id}")
 def update_task(task: schema.Task, task_id: int, response: Response, current_user: User = Depends(get_current_user)):
     try:
-        session = create_session()
+        # session = create_session()
+        session = SessionManager.create_session()
         task_dict = task.__dict__
         task_dict.update({'author': current_user.id})
         task_dict = TaskValidator.to_python(task_dict)
@@ -74,7 +76,9 @@ def update_task(task: schema.Task, task_id: int, response: Response, current_use
 @router.get("/{task_id}")
 def get_task(task_id: int, response: Response, current_user: User = Depends(get_current_user)):
     try:
-        session = create_session()
+        # session = create_session()
+        session = SessionManager.create_session()
+
         existing_task = session.query(Task).filter(Task.id == task_id, Task.author == current_user.id).first()
         session.close()
         if existing_task is None:
@@ -96,7 +100,9 @@ def get_task(task_id: int, response: Response, current_user: User = Depends(get_
 @router.delete("/{task_id}")
 def delete_task(task_id: int, response: Response, current_user: User = Depends(get_current_user)):
     try:
-        session = create_session()
+        # session = create_session()
+        session = SessionManager.create_session()
+
         existing_task = session.query(Task).filter(Task.id == task_id, Task.author == current_user.id).first()
         if existing_task is None:
             response.status_code = status.HTTP_404_NOT_FOUND

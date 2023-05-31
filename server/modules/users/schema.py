@@ -1,5 +1,5 @@
 from pydantic import BaseModel, validator, Field
-from core.db import create_session
+from core.db import SessionManager
 
 
 class Header:

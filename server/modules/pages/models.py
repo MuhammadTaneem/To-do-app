@@ -2,13 +2,13 @@ from datetime import datetime
 
 from sqlalchemy import Table, Column, Integer, String, DateTime, ForeignKey
 from sqlalchemy.orm import registry
-from core import db
+from core.db import mapper_registry
 from sqlalchemy.sql import func
 
 # mapper_registry = registry()
 
 page_table = Table(
-    "page", db.metadata_obj,
+    "page", mapper_registry.metadata,
     Column('id', Integer, primary_key=True),
     Column('author', Integer, ForeignKey('user.id')),
     Column('parent_page_id', Integer, default=0),

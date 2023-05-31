@@ -4,7 +4,7 @@ from fastapi.responses import JSONResponse
 from core.dependencis import send_email, create_active_token, verify_active_token
 from core.exception import CustomException
 from modules.users.models import User
-from core.db import create_session
+from core.db import SessionManager
 from .validator import UserValidator, PasswordValidator, UserUpdateValidator, UserLoginValidator, ResetPasswordValidator
 from . import schema
 from core.decorators import login_required
@@ -18,7 +18,9 @@ router = APIRouter()
 @router.get("/")
 def get_user(response: Response, ):
     try:
-        session = create_session()
+        # session = create_session()
+        session = SessionManager.create_session()
+
         result = session.query(User).all()
         session.close()
         result = schema.UserListView(users=result)
@@ -75,7 +77,9 @@ async def create_user(request: Request):
         clean_data.update({'password': get_hash_password(clean_data["password"])})
         del clean_data["password_confirm"]
         data = User(**clean_data)
-        session = create_session()
+        # session = create_session()
+        session = SessionManager.create_session()
+
         session.add(data)
         session.commit()
         session.refresh(data)
@@ -151,7 +155,9 @@ async def login_user(request: Request):
         # import pdb;pdb.set_trace()
         UserLoginValidator.to_python(user_dict)
 
-        session = create_session()
+        # session = create_session()
+        session = SessionManager.create_session()
+
         user_exists = session.query(User).filter(User.email == user_dict['email']).first()
         session.close()
 
@@ -245,7 +251,9 @@ async def change_password(request: Request):
                                 content={'status': 'Failed', 'message': 'Incorrect Password.',
                                          'errors': None})
         current_user.password = get_hash_password(passwords['new_password'])
-        session = create_session()
+        # session = create_session()
+        session = SessionManager.create_session()
+
         session.merge(current_user)
         session.commit()
         session.close()
@@ -282,7 +290,9 @@ async def reset_password_request(request: Request):
                                          'errors': {
                                              'email': 'This field is required'
                                          }})
-        session = create_session()
+        # session = create_session()
+        session = SessionManager.create_session()
+
         user = session.query(User).filter(User.email == password_reset_data['email']).first()
         session.close()
         if user is None:
@@ -317,7 +327,9 @@ async def reset_password_verify(request: Request):
         reset_dict = await request.json()
         db_token = verify_reset_token(reset_dict["token"])
         clean_data = ResetPasswordValidator.to_python(reset_dict)
-        session = create_session()
+        # session = create_session()
+        session = SessionManager.create_session()
+
         db_token.used = True
         db_token.user.password = get_hash_password(clean_data['new_password'])
         session.merge(db_token)
@@ -344,7 +356,9 @@ async def active_user(request: Request):
     try:
         reset_dict = await request.json()
         db_token = verify_active_token(reset_dict["token"])
-        session = create_session()
+        # session = create_session()
+        session = SessionManager.create_session()
+
         db_token.user.active = True
         db_token.used = True
         session.merge(db_token)
@@ -394,7 +408,9 @@ async def update_user(request: Request):
         current_user.address = user_dict.get('address')
         current_user.email = user_dict.get('email')
 
-        session = create_session()
+        # session = create_session()
+        session = SessionManager.create_session()
+
         session.merge(current_user)
         session.commit()
         session.close()

@@ -1,12 +1,14 @@
 from formencode import Schema, validators, FancyValidator, Invalid, All
-from core.db import create_session
+from core.db import SessionManager
 from modules.users.models import User
 
 
 class UniqueUserValidator(FancyValidator):
 
     def _convert_to_python(self, value, state):
-        session = create_session()
+        # session = create_session()
+        session = SessionManager.create_session()
+
         user_exists = session.query(User).filter(User.email == value).first()
         session.close()
         email_msg = 'That email already exists'

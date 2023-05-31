@@ -5,7 +5,7 @@ from fastapi import Depends, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
-from core.db import create_session
+from core.db import SessionManager
 from core.exception import CustomException
 from modules.users.models import User, UserToken
 from core.enum import TokenType
@@ -159,7 +159,8 @@ def verify_reset_token(token: str = Depends(oauth2_scheme)):
                               error=None)
 
     try:
-        session = create_session()
+        # session = create_session()
+        session = SessionManager.create_session()
         db_token = session.query(UserToken).filter(UserToken.token == token) \
             .order_by(UserToken.id.desc()).first()
         session.close()
@@ -214,7 +215,9 @@ def verify_active_token(token: str = Depends(oauth2_scheme)):
                               error=None)
 
     try:
-        session = create_session()
+        # session = create_session()
+        session = SessionManager.create_session()
+
         db_token = session.query(UserToken).filter(UserToken.token == token) \
             .order_by(UserToken.id.desc()).first()
         session.close()
@@ -248,7 +251,9 @@ def create_reset_token(user: any):
         # import pdb;pdb.set_trace()
         expire = datetime.utcnow() + timedelta(minutes=RESET_TOKEN_EXPIRE_MINUTES)
         data = UserToken(author=user.id, expire=expire, token=reset_token)
-        session = create_session()
+        # session = create_session()
+        session = SessionManager.create_session()
+
         session.add(data)
         session.commit()
         session.close()
@@ -266,7 +271,9 @@ def create_active_token(user: any):
         # import pdb;pdb.set_trace()
         expire = datetime.utcnow() + timedelta(minutes=ACTIVE_TOKEN_EXPIRE_MINUTES)
         data = UserToken(author=user.id, expire=expire, token=token)
-        session = create_session()
+        # session = create_session()
+        session = SessionManager.create_session()
+
         session.add(data)
         session.commit()
         session.close()
@@ -301,7 +308,9 @@ async def get_current_user(token: str = Depends(oauth2_scheme)):
                               error=e)
 
     try:
-        session = create_session()
+        # session = create_session()
+        session = SessionManager.create_session()
+
         user = session.query(User).filter(User.email == email).first()
         session.close()
     except Exception as e:
