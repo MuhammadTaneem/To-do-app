@@ -5,7 +5,6 @@ from sqlalchemy.orm import registry
 from core.db import mapper_registry
 from sqlalchemy.sql import func
 
-# mapper_registry = registry()
 
 page_table = Table(
     "page", mapper_registry.metadata,
@@ -24,8 +23,6 @@ page_table = Table(
 
 class Page:
     pass
-    # def __repr__(self) -> str:
-    #     return self.page_name
 
 
 page_mapper = registry().map_imperatively(Page, page_table)

@@ -1,14 +1,13 @@
 from datetime import datetime
 from sqlalchemy import Table, Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy.ext.hybrid import hybrid_property
 from sqlalchemy.orm import registry
-from core import db
+from core.db import mapper_registry
 from .enum import TaskStatus
 from sqlalchemy.sql import func
 
-# mapper_registry = registry()
-
 task_table = Table(
-    "task", db.metadata_obj,
+    "task", mapper_registry.metadata,
     Column('id', Integer, primary_key=True),
     Column('author', Integer, ForeignKey('user.id')),
     Column('page_id', Integer, ForeignKey('page.id')),
@@ -19,14 +18,10 @@ task_table = Table(
     Column('last_edit', DateTime(timezone=True), onupdate=datetime.utcnow),
 )
 
-# db.metadata_obj.create_all(db.engine)
 
 
 class Task:
-    def __init__(self, status):
-        self.status = status
-
-    @property
+    @hybrid_property
     def status_label(self):
         return TaskStatus[self.status].value
 

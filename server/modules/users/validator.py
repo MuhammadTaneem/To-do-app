@@ -6,7 +6,6 @@ from modules.users.models import User
 class UniqueUserValidator(FancyValidator):
 
     def _convert_to_python(self, value, state):
-        # session = create_session()
         session = SessionManager.create_session()
 
         user_exists = session.query(User).filter(User.email == value).first()

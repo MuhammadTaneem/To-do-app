@@ -194,55 +194,12 @@ async def login_user(request: Request):
                               message='Internal  server error', error=e)
 
 
-# @router.put("/change_password")
-# def change_password(passwords: schema.PasswordChange, response: Response,
-#                     current_user: User = Depends(get_current_user)):
-#     try:
-#         session = create_session()
-#         # user_dict = passwords.__dict__
-#         existing_user = session.query(User).filter_by(id=current_user.id).first()
-#         if existing_user is None:
-#             response.status_code = status.HTTP_404_NOT_FOUND
-#             return {'status': status.HTTP_404_NOT_FOUND, 'message': 'User not found'}
-#
-#         # existing_user.password = passwords.old_password
-#
-#         password_verification = verify_password(passwords.old_password, existing_user.password)
-#         if not password_verification:
-#             response.status_code = status.HTTP_401_UNAUTHORIZED
-#             return {'status': status.HTTP_401_UNAUTHORIZED, 'message': 'Password is not correct',
-#                     'errors': None}
-#
-#         clean_password = PasswordValidator.to_python({'password': passwords.new_password})
-#         # import pdb;pdb.set_trace()
-#         existing_user.password = get_hash_password(clean_password['password'])
-#
-#         session.merge(existing_user)
-#         # update the user details`
-#         session.commit()
-#         session.refresh(existing_user)
-#         session.close()
-#         existing_user = schema.ReadUser(**existing_user.__dict__)
-#         response.status_code = status.HTTP_200_OK
-#         return {'status': status.HTTP_200_OK, 'message': 'password changed', 'user': existing_user}
-#
-#     except formencode.Invalid as e:
-#         response.status_code = status.HTTP_406_NOT_ACCEPTABLE
-#         return {'status': status.HTTP_406_NOT_ACCEPTABLE, 'message': 'Fix the following error ',
-#                 'errors': e.unpack_errors()}
-#
-#     except Exception as e:
-#         response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
-#         return {'status': status.HTTP_500_INTERNAL_SERVER_ERROR, 'message': 'Internal server error ',
-#                 'errors': e}
-
 
 @router.put("/change_password")
 @login_required
 async def change_password(request: Request):
     try:
         current_user = request.state.user
-        # import pdb;pdb.set_trace()
         passwords = await request.json()
         PasswordValidator.to_python(passwords)
         password_verification = verify_password(passwords['old_password'], current_user.password)
@@ -251,7 +208,6 @@ async def change_password(request: Request):
                                 content={'status': 'Failed', 'message': 'Incorrect Password.',
                                          'errors': None})
         current_user.password = get_hash_password(passwords['new_password'])
-        # session = create_session()
         session = SessionManager.create_session()
 
         session.merge(current_user)
@@ -290,7 +246,6 @@ async def reset_password_request(request: Request):
                                          'errors': {
                                              'email': 'This field is required'
                                          }})
-        # session = create_session()
         session = SessionManager.create_session()
 
         user = session.query(User).filter(User.email == password_reset_data['email']).first()
@@ -301,10 +256,7 @@ async def reset_password_request(request: Request):
                                          'error': None})
 
         reset_token = create_reset_token(user)
-
-        # send an email with the reset token to the user's email address
         reset_link = f' {str(request.url)}confirm?token={reset_token}'
-        # import pdb;pdb.set_trace()
         msg = f"Dear {user.first_name} {user.last_name}, \nClick the link to reset your password: {reset_link}this link will be expired in. {RESET_TOKEN_EXPIRE_MINUTES} minutes."
 
         send_email(password_reset_data['email'], "Password Reset Request", msg)
@@ -327,7 +279,6 @@ async def reset_password_verify(request: Request):
         reset_dict = await request.json()
         db_token = verify_reset_token(reset_dict["token"])
         clean_data = ResetPasswordValidator.to_python(reset_dict)
-        # session = create_session()
         session = SessionManager.create_session()
 
         db_token.used = True
@@ -347,8 +298,6 @@ async def reset_password_verify(request: Request):
     except Exception as e:
         raise CustomException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, status='Failed',
                               message='Internal server error ', error=e)
-        # return {'status': status.HTTP_500_INTERNAL_SERVER_ERROR, 'message': 'Internal server error ',
-        #         'errors': e}
 
 
 @router.post("/active")
@@ -356,7 +305,6 @@ async def active_user(request: Request):
     try:
         reset_dict = await request.json()
         db_token = verify_active_token(reset_dict["token"])
-        # session = create_session()
         session = SessionManager.create_session()
 
         db_token.user.active = True
@@ -376,7 +324,7 @@ async def active_user(request: Request):
 
     except Exception as e:
         raise CustomException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, status='Failed',
-                              message='Internal server errorr ', error=e)
+                              message='Internal server error ', error=e)
 
 
 @router.get("/profile")

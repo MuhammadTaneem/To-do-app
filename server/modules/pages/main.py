@@ -51,7 +51,6 @@ async def create_page(request: Request, response: Response, current_user: User =
 @router.get("/{page_id}")
 def get_page(page_id: int, response: Response, current_user: User = Depends(get_current_user)):
     try:
-        # session = create_session()
         session = SessionManager.create_session()
         existing_page = session.query(Page).filter(Page.id == page_id, Page.author == current_user.id).first()
         child_pages = session.query(Page).filter(Page.parent_page_id == page_id, Page.author == current_user.id).all()
@@ -75,23 +74,12 @@ def get_page(page_id: int, response: Response, current_user: User = Depends(get_
 @router.put("/{page_id}")
 def update_page(page: schema.Page, page_id: int, response: Response, current_user: User = Depends(get_current_user)):
     try:
-        # session = create_session()
-        # import pdb;
-        # pdb.set_trace()
+
         session = SessionManager.create_session()
 
         page_dict = page.__dict__
         page_dict.update({'author': current_user.id})
         page_dict = PageValidator.to_python(page_dict)
-        # import pdb;pdb.set_trace()
-        # existing_page = session.query(Page).filter(Page.id == page_id, Page.author == current_user.id).update(
-        #     {
-        #         Page.author: page_dict.get('author'),
-        #         Page.page_name: page_dict.get('page_name'),
-        #         Page.page_description: page_dict.get('page_description'),
-        #         Page.color: page_dict.get('color')
-        #     }, synchronize_session=False)
-
         existing_page = session.query(Page).filter(Page.id == page_id, Page.author == current_user.id).first()
         if existing_page is None:
             response.status_code = status.HTTP_404_NOT_FOUND
@@ -123,7 +111,6 @@ def update_page(page: schema.Page, page_id: int, response: Response, current_use
 @router.delete("/{page_id}")
 def delete_page(page_id: int, response: Response, current_user: User = Depends(get_current_user)):
     try:
-        # session = create_session()
         session = SessionManager.create_session()
 
         existing_page = session.query(Page).filter(Page.id == page_id, Page.author == current_user.id).first()
@@ -141,16 +128,3 @@ def delete_page(page_id: int, response: Response, current_user: User = Depends(g
         response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
         return {'status': status.HTTP_500_INTERNAL_SERVER_ERROR, 'message': 'Internal server error ',
                 'error_dict': e}
-
-# @router.get("/list/{parent_id}")
-# def get_pages(response: Response, parent_id, current_user: User = Depends(get_current_user)):
-#     try:
-#         session = create_session()
-#         result = session.query(Page).filter(Page.author == current_user.id, Page.parent_page_id == parent_id).all()
-#         session.close()
-#         result = schema.PageListView(pages=result)
-#         response.status_code = status.HTTP_200_OK
-#         return {'status': status.HTTP_200_OK, 'message': 'page list loaded', 'pages': result}
-#     except Exception as e:
-#         response.status_code = status.HTTP_404_NOT_FOUND
-#         return {'status': status.HTTP_404_NOT_FOUND, 'message': 'Internal server error ', 'error_dict': e}

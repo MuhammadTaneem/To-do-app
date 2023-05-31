@@ -9,13 +9,4 @@ class TaskStatus(Enum):
 
 
 enum_dict = {e.value: e.name for e in TaskStatus}
-# print(enum_dict)
-
-# print(enum_dict)
-# for k, y in enum_dict.items():
-#     print(y)
-
-
-
-# print(TaskStatus["todo"])
 

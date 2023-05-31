@@ -1,5 +1,5 @@
 import formencode
-from fastapi import APIRouter, status, Response, Depends
+from fastapi import APIRouter, status, Response, Depends, Request
 from core.db import SessionManager
 from .validator import TaskValidator
 from core.dependencis import get_current_user
@@ -11,14 +11,13 @@ router = APIRouter()
 
 
 @router.post("/")
-def create_task(task: schema.Task, response: Response, current_user: User = Depends(get_current_user)):
+async def create_task(request: Request, response: Response, current_user: User = Depends(get_current_user)):
     try:
-        task_dict = task.__dict__
+        task_dict = await request.json()
         task_dict.update({'author': current_user.id})
         task_dict.update({'task_name': "Unnamed "}) if task_dict['task_name'] == "" else None
         clean_data = TaskValidator.to_python(task_dict)
         data = Task(**clean_data)
-        # session = create_session()
         session = SessionManager.create_session()
         session.add(data)
         session.commit()
@@ -100,7 +99,6 @@ def get_task(task_id: int, response: Response, current_user: User = Depends(get_
 @router.delete("/{task_id}")
 def delete_task(task_id: int, response: Response, current_user: User = Depends(get_current_user)):
     try:
-        # session = create_session()
         session = SessionManager.create_session()
 
         existing_task = session.query(Task).filter(Task.id == task_id, Task.author == current_user.id).first()

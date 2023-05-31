@@ -2,11 +2,9 @@ from sqlalchemy import Table, Column, Integer, String, ForeignKey, DateTime, Boo
 from sqlalchemy.orm import backref, relationship
 from core.db import mapper_registry
 
-# mapper_registry = registry()
 
 user_table = Table(
     "user", mapper_registry.metadata,
-    # "user", mapper_registry.metadata,
     Column('id', Integer, primary_key=True),
     Column('first_name', String),
     Column('last_name', String),
@@ -32,7 +30,6 @@ class UserToken:
 
 class User:
     pass
-    # reset_token = relation(UserReset, back_populates='user')
 
 
 user_mapper = mapper_registry.map_imperatively(User, user_table)
