@@ -15,7 +15,6 @@ async def create_task(request: Request, response: Response, current_user: User =
     try:
         task_dict = await request.json()
         task_dict.update({'author': current_user.id})
-        task_dict.update({'task_name': "Unnamed "}) if task_dict['task_name'] == "" else None
         clean_data = TaskValidator.to_python(task_dict)
         data = Task(**clean_data)
         session = SessionManager.create_session()

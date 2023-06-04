@@ -11,7 +11,7 @@ task_table = Table(
     Column('id', Integer, primary_key=True),
     Column('author', Integer, ForeignKey('user.id')),
     Column('page_id', Integer, ForeignKey('page.id')),
-    Column('task_name', String),
+    Column('task_name', String, default="Unnamed"),
     Column('task_description', String),
     Column('status', String),
     Column('create_date', DateTime(timezone=True), server_default=func.now()),

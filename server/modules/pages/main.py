@@ -22,7 +22,6 @@ async def create_page(request: Request, response: Response, current_user: User =
     try:
         page_dict = await request.json()
         page_dict.update({'author': current_user.id})
-        page_dict.update({'page_name': "Unnamed"}) if page_dict['page_name'] == "" else None
         clean_data = PageValidator.to_python(page_dict)
         data = Page(**clean_data)
         # session = create_session()
