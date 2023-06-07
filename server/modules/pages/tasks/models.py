@@ -9,8 +9,8 @@ from sqlalchemy.sql import func
 task_table = Table(
     "task", mapper_registry.metadata,
     Column('id', Integer, primary_key=True),
-    Column('author', Integer, ForeignKey('user.id')),
-    Column('page_id', Integer, ForeignKey('page.id')),
+    Column('author', Integer, ForeignKey('user.id', ondelete='CASCADE')),
+    Column('page_id', Integer, ForeignKey('page.id', ondelete='CASCADE')),
     Column('task_name', String, default="Unnamed"),
     Column('task_description', String),
     Column('status', String),

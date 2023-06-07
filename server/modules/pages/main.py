@@ -22,6 +22,7 @@ async def create_page(request: Request, response: Response, current_user: User =
     try:
         page_dict = await request.json()
         page_dict.update({'author': current_user.id})
+        # import pdb;pdb.set_trace()
         clean_data = PageValidator.to_python(page_dict)
         data = Page(**clean_data)
         # session = create_session()
@@ -29,7 +30,6 @@ async def create_page(request: Request, response: Response, current_user: User =
 
         session.add(data)
         # session.rollback()
-        # import pdb;pdb.set_trace()
         session.commit()
         session.refresh(data)
         session.close()
@@ -60,10 +60,10 @@ def get_page(page_id: int, response: Response, current_user: User = Depends(get_
             return {'status': status.HTTP_404_NOT_FOUND, 'message': 'Page not found'}
         page = schema.ReadPage(**existing_page.__dict__)
         children = schema.PageListView(pages=child_pages)
-        tasks  = task_schema.TaskListView(tasks = tasks_list)
+        tasks = task_schema.TaskListView(tasks=tasks_list)
         response.status_code = status.HTTP_200_OK
         return {'status': status.HTTP_200_OK, 'message': 'page details loaded',
-                'data': {'page': page, 'children': children.pages, 'tasks':tasks.tasks}}
+                'data': {'page': page, 'children': children.pages, 'tasks': tasks.tasks}}
 
     except Exception as e:
         response.status_code = status.HTTP_404_NOT_FOUND
@@ -71,7 +71,8 @@ def get_page(page_id: int, response: Response, current_user: User = Depends(get_
 
 
 @router.put("/{page_id}")
-async def update_page(request: Request, page_id: int, response: Response, current_user: User = Depends(get_current_user)):
+async def update_page(request: Request, page_id: int, response: Response,
+                      current_user: User = Depends(get_current_user)):
     try:
 
         session = SessionManager.create_session()
@@ -84,6 +85,7 @@ async def update_page(request: Request, page_id: int, response: Response, curren
             return {'status': status.HTTP_404_NOT_FOUND, 'message': 'Page not found'}
 
         existing_page.author = page_dict.get('author')
+        existing_page.parent_page_id = page_dict.get('parent_page_id')
         existing_page.page_name = page_dict.get('page_name')
         existing_page.page_description = page_dict.get('page_description')
         existing_page.color = page_dict.get('color')

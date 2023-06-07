@@ -1,11 +1,4 @@
--- CREATE TABLE "user" (
---     id SERIAL4 PRIMARY KEY,
---     first_name VARCHAR,
---     last_name VARCHAR,
---     password VARCHAR,
---     address VARCHAR,
---     email VARCHAR
--- );
+
 
 CREATE TABLE "user" (
     id SERIAL4 PRIMARY KEY,
@@ -19,27 +12,15 @@ CREATE TABLE "user" (
 
 CREATE TABLE "user_token" (
     id SERIAL PRIMARY KEY,
-    author INTEGER REFERENCES "user" (id),
+    author INTEGER REFERENCES "user" (id) ON DELETE CASCADE,
     token VARCHAR,
     expire TIMESTAMP,
     used BOOLEAN DEFAULT FALSE
 );
 
-
--- user_token_table = Table(
---     "user_token",  mapper_registry.metadata,
---     Column('id', Integer, primary_key=True),
---     Column('author', Integer, ForeignKey('user.id')),
---     Column('reset_token', String),
---     Column('expire', DateTime),
---     Column('used', Boolean, default=False)
--- )
-
-
-
 CREATE TABLE "page" (
     id SERIAL4 PRIMARY KEY,
-    author INTEGER REFERENCES "user" (id),
+    author INTEGER REFERENCES "user" (id) ON DELETE CASCADE,
     parent_page_id INTEGER DEFAULT 0,
     page_name VARCHAR DEFAULT 'Unnamed',
     page_description VARCHAR,
@@ -48,13 +29,13 @@ CREATE TABLE "page" (
     last_edit TIMESTAMP WITH TIME ZONE DEFAULT now()
 );
 
-CREATE TABLE "task" (
+CREATE TABLE task (
     id SERIAL PRIMARY KEY,
-    author INTEGER REFERENCES "user" (id),
-    page_id INTEGER REFERENCES page (id),
+    author INTEGER REFERENCES "user" (id) ON DELETE CASCADE,
+    page_id INTEGER REFERENCES page (id) ON DELETE CASCADE,
     task_name VARCHAR DEFAULT 'Unnamed',
     task_description VARCHAR,
     status VARCHAR,
-    create_date TIMESTAMP WITH TIME ZONE DEFAULT now(),
-    last_edit TIMESTAMP WITH TIME ZONE DEFAULT now()
+    create_date TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    last_edit TIMESTAMP WITH TIME ZONE
 );
